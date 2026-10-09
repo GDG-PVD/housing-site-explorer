@@ -1,0 +1,6 @@
+{
+  "name": "Site Explorer",
+  "description": "A web app for housing practitioners in Rhode Island to evaluate potential housing sites, nearby amenities, town zoning ordinances, and plain-English developer guidance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

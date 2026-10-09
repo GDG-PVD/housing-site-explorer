@@ -1,0 +1,236 @@
+[
+  {
+    "town": "Barrington",
+    "zoningUrl": "https://ecode360.com/7120841",
+    "platform": "eCode360",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Bristol",
+    "zoningUrl": "https://library.municode.com/ri/bristol/codes/code_of_ordinances",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 28"
+  },
+  {
+    "town": "Burrillville",
+    "zoningUrl": "https://library.municode.com/ri/burrillville",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 30"
+  },
+  {
+    "town": "Central Falls",
+    "zoningUrl": "https://library.municode.com/ri/central_falls/codes/code_of_ordinances",
+    "platform": "Municode",
+    "whereZoningSits": "Revised Ordinances, Part II, Appendix A"
+  },
+  {
+    "town": "Charlestown",
+    "zoningUrl": "https://ecode360.com/8492633",
+    "platform": "eCode360",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Coventry",
+    "zoningUrl": "https://ecode360.com/6648479",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 255"
+  },
+  {
+    "town": "Cranston",
+    "zoningUrl": "https://library.municode.com/ri/cranston",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 17"
+  },
+  {
+    "town": "Cumberland",
+    "zoningUrl": "https://ecode360.com/30187156",
+    "platform": "eCode360",
+    "whereZoningSits": "Code of Ordinances, Appendix B"
+  },
+  {
+    "town": "East Greenwich",
+    "zoningUrl": "https://ecode360.com/13130364",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 260"
+  },
+  {
+    "town": "East Providence",
+    "zoningUrl": "https://library.municode.com/ri/east_providence",
+    "platform": "Municode",
+    "whereZoningSits": "City Code, Zoning chapter"
+  },
+  {
+    "town": "Exeter",
+    "zoningUrl": "https://library.municode.com/ri/exeter",
+    "platform": "Municode",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Foster",
+    "zoningUrl": "https://library.municode.com/ri/foster",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 38"
+  },
+  {
+    "town": "Glocester",
+    "zoningUrl": "https://ecode360.com/9717353",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 350"
+  },
+  {
+    "town": "Hopkinton",
+    "zoningUrl": "https://library.municode.com/ri/hopkinton",
+    "platform": "Municode",
+    "whereZoningSits": "Appendix A"
+  },
+  {
+    "town": "Jamestown",
+    "zoningUrl": "https://library.municode.com/ri/jamestown",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 82"
+  },
+  {
+    "town": "Johnston",
+    "zoningUrl": "https://ecode360.com/28282232",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 340"
+  },
+  {
+    "town": "Lincoln",
+    "zoningUrl": "https://ecode360.com/12125764",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 260"
+  },
+  {
+    "town": "Little Compton",
+    "zoningUrl": "https://ecode360.com/35244527",
+    "platform": "eCode360",
+    "whereZoningSits": "Town Code, Chapter XIV"
+  },
+  {
+    "town": "Middletown",
+    "zoningUrl": "https://codelibrary.amlegal.com/codes/middletown/latest/middletown_ri/0-0-0-6285",
+    "platform": "American Legal Publishing",
+    "whereZoningSits": "Title XV, Chapter 152"
+  },
+  {
+    "town": "Narragansett",
+    "zoningUrl": "https://library.municode.com/ri/narragansett",
+    "platform": "Municode",
+    "whereZoningSits": "Appendix A"
+  },
+  {
+    "town": "New Shoreham",
+    "zoningUrl": "https://clerkshq.com/NewShorehamRI?docId=NShoreAppE&path=NewShoreham_Code%2CNShoreP2%2CNShoreAppE%2C",
+    "platform": "ClerksHQ",
+    "whereZoningSits": "Zoning Ordinance (link opens to it)"
+  },
+  {
+    "town": "Newport",
+    "zoningUrl": "https://library.municode.com/ri/newport",
+    "platform": "Municode",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "North Kingstown",
+    "zoningUrl": "https://library.municode.com/ri/north_kingstown",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 21"
+  },
+  {
+    "town": "North Providence",
+    "zoningUrl": "https://northprovidenceri.gov/pdf/plan/North_Providence_Zoning_Ordinance_amended.pdf",
+    "platform": "Town website (PDF)",
+    "whereZoningSits": "Whole file is the zoning ordinance"
+  },
+  {
+    "town": "North Smithfield",
+    "zoningUrl": "https://ecode360.com/NO4256",
+    "platform": "eCode360",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Pawtucket",
+    "zoningUrl": "https://ecode360.com/8132886",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 410"
+  },
+  {
+    "town": "Portsmouth",
+    "zoningUrl": "https://ecode360.com/32075192",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 405"
+  },
+  {
+    "town": "Providence",
+    "zoningUrl": "https://library.municode.com/ri/providence/codes/code_of_ordinances",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 27"
+  },
+  {
+    "town": "Richmond",
+    "zoningUrl": "https://clerkshq.com/richmond-ri",
+    "platform": "ClerksHQ",
+    "whereZoningSits": "Title 18"
+  },
+  {
+    "town": "Scituate",
+    "zoningUrl": "https://library.municode.com/ri/scituate",
+    "platform": "Municode",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Smithfield",
+    "zoningUrl": "https://ecode360.com/SM2013",
+    "platform": "eCode360",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "South Kingstown",
+    "zoningUrl": "https://library.municode.com/ri/south_kingstown",
+    "platform": "Municode",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Tiverton",
+    "zoningUrl": "https://library.municode.com/ri/tiverton",
+    "platform": "Municode",
+    "whereZoningSits": "Appendix A"
+  },
+  {
+    "town": "Warren",
+    "zoningUrl": "https://library.municode.com/ri/warren/codes/zoning_ordinance",
+    "platform": "Municode",
+    "whereZoningSits": "Chapter 32 (link opens to it)"
+  },
+  {
+    "town": "Warwick",
+    "zoningUrl": "https://www.warwickri.gov/city-council-legislative-department/pages/zoning-ordinances",
+    "platform": "Town website",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "West Greenwich",
+    "zoningUrl": "https://ecode360.com/31440174",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 450"
+  },
+  {
+    "town": "West Warwick",
+    "zoningUrl": "https://library.municode.com/ri/west_warwick",
+    "platform": "Municode",
+    "whereZoningSits": ""
+  },
+  {
+    "town": "Westerly",
+    "zoningUrl": "https://ecode360.com/7756211",
+    "platform": "eCode360",
+    "whereZoningSits": "Chapter 260"
+  },
+  {
+    "town": "Woonsocket",
+    "zoningUrl": "https://clerkshq.com/Content/Woonsocket-ri/books/code/woonappc.htm",
+    "platform": "ClerksHQ",
+    "whereZoningSits": "City Code, Appendix C (link opens to it)"
+  }
+]
