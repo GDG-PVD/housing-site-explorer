@@ -383,16 +383,38 @@ ${amenityListText}
 Write the plain-English summary in exactly 5 to 8 sentences for a housing developer, ending with:
 "This is a starting point, not a zoning determination. Check with the town."`;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: userPrompt,
-      config: {
-        systemInstruction,
-        temperature: 0.7,
-      },
-    });
+    // Free-tier keys are the first to be turned away when Gemini is busy
+    // (503 "high demand"). Retry once, then fall back to an older Flash model.
+    const MODELS = ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.5-flash'];
+    let response;
+    for (let attempt = 0; attempt < MODELS.length; attempt++) {
+      try {
+        response = await ai.models.generateContent({
+          model: MODELS[attempt],
+          contents: userPrompt,
+          config: {
+            systemInstruction,
+            temperature: 0.7,
+          },
+        });
+        break;
+      } catch (err: any) {
+        const busy = /\b(503|429)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand/i.test(
+          String(err?.status ?? '') + ' ' + String(err?.message ?? '')
+        );
+        if (!busy || attempt === MODELS.length - 1) {
+          if (busy) {
+            throw new Error(
+              'Gemini is busy right now. Wait a minute and click Try Again. If it keeps happening, use a Gemini API key from a project with billing enabled.'
+            );
+          }
+          throw err;
+        }
+        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+      }
+    }
 
-    let rawText = response.text ? response.text.trim() : '';
+    let rawText = response?.text ? response.text.trim() : '';
 
     // Guarantee the exact required ending sentence
     const MANDATORY_ENDING = 'This is a starting point, not a zoning determination. Check with the town.';
