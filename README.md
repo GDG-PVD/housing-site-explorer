@@ -12,7 +12,7 @@ Prompts to try after you Remix: [PROMPT-CARDS.md](PROMPT-CARDS.md)
 
 The app needs a Google Maps API key and does not contain one. In AI Studio, add it under Settings, then Secrets, with the name `GOOGLE_MAPS_API_KEY`. If no secret is set, the app asks you to paste a key and keeps it in your browser only. Never paste a key into the chat or commit one to a repo.
 
-**Restrict your key.** The app hands the key to the browser to draw the map, so anyone who opens a shared copy of your app can read it. In the Google Cloud console, open APIs & Services, then Credentials, then your key: under Application restrictions choose Websites and add your app's address, and under API restrictions allow only the Maps JavaScript, Geocoding and Places APIs.
+**Restrict your key.** The app hands the key to the browser to draw the map, so anyone who opens a shared copy of your app can read it. The server also uses the same key to look up addresses and nearby places, so leave Application restrictions at None: Google refuses website-restricted keys on server calls, and address search would fail while the map still draws. In the Google Cloud console, open APIs & Services, then Credentials, then your key: under API restrictions allow only the Maps JavaScript, Geocoding, Places API (New) and Places APIs. Then set a low daily quota on each of those APIs, and delete the key after the event.
 
 ## Run locally
 
