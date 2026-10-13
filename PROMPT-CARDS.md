@@ -16,3 +16,9 @@ Open Site Explorer, click **Remix**, then paste one prompt at a time into the ch
 1. "Add a 'Funding' tab listing Rhode Island programs that could fund affordable housing at this site, such as RIHousing programs and housing tax credits, with a link to each program's source page."
 2. "For each program, show who can apply, roughly how much, and the next deadline if one is published. Say 'check the source' when you are not sure."
 3. "Add a simple calculator: total project cost minus each selected funding source, showing the remaining gap."
+
+## Any challenge: reach more people
+The summary card already has a language picker: it sends the text to Gemini through `/api/translate` and caches each language. The same step works for anything on the page.
+1. "When I pick a language in the summary card, translate the zoning card and the nearby places list too. Keep street names, place names and links as they are."
+2. "Translate my challenge tab into the selected language, including the printout."
+3. "Add a one-page flyer for neighbors about this site, in the selected language, in plain words a non-expert can follow."
