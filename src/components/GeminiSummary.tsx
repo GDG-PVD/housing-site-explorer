@@ -1,5 +1,24 @@
-import React, { useState } from 'react';
-import { Sparkles, Copy, Check, RefreshCw, AlertCircle, ShieldAlert } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Sparkles, Copy, Check, RefreshCw, AlertCircle, ShieldAlert, Languages } from 'lucide-react';
+
+// Rhode Island's most common home languages after English. Add more here.
+const LANGUAGES = [
+  { code: 'en', label: 'English', name: 'English' },
+  { code: 'es', label: 'Español', name: 'Spanish' },
+  { code: 'pt', label: 'Português', name: 'Portuguese' },
+  { code: 'kea', label: 'Kriolu', name: 'Cape Verdean Creole (Kriolu)' },
+  { code: 'ht', label: 'Kreyòl ayisyen', name: 'Haitian Creole' },
+  { code: 'km', label: 'ខ្មែរ', name: 'Khmer' },
+  { code: 'zh', label: '中文', name: 'Simplified Chinese' },
+  { code: 'vi', label: 'Tiếng Việt', name: 'Vietnamese' },
+  { code: 'fr', label: 'Français', name: 'French' },
+  { code: 'ar', label: 'العربية', name: 'Arabic', rtl: true },
+];
+
+interface Translation {
+  text: string;
+  disclaimer: string;
+}
 
 interface GeminiSummaryProps {
   summary: string;
@@ -15,13 +34,17 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
   onRegenerate,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [language, setLanguage] = useState('en');
+  const [translations, setTranslations] = useState<Record<string, Translation>>({});
+  const [translating, setTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState<string | null>(null);
 
-  const handleCopy = () => {
-    if (!summary) return;
-    navigator.clipboard.writeText(summary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  // A new summary makes old translations stale.
+  useEffect(() => {
+    setTranslations({});
+    setLanguage('en');
+    setTranslateError(null);
+  }, [summary]);
 
   const MANDATORY_ENDING = 'This is a starting point, not a zoning determination. Check with the town.';
 
@@ -33,6 +56,42 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
     hasMandatoryEnding = true;
     bodyText = summary.replace(MANDATORY_ENDING, '').trim();
   }
+
+  const current = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
+  const translated = language === 'en' ? null : translations[language];
+  const shownBody = translated ? translated.text : bodyText;
+  const shownEnding = translated?.disclaimer || MANDATORY_ENDING;
+
+  const handleLanguage = async (code: string) => {
+    setLanguage(code);
+    setTranslateError(null);
+    if (code === 'en' || translations[code]) return;
+    const target = LANGUAGES.find((l) => l.code === code);
+    if (!target) return;
+    setTranslating(true);
+    try {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: bodyText, disclaimer: MANDATORY_ENDING, language: target.name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Translation failed.');
+      setTranslations((prev) => ({ ...prev, [code]: data }));
+    } catch (err: any) {
+      setTranslateError(err.message || 'Translation failed.');
+      setLanguage('en');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!summary) return;
+    navigator.clipboard.writeText(translated ? `${shownBody} ${shownEnding}` : summary);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="w-full bg-gradient-to-b from-blue-50/60 to-white border border-blue-200/80 rounded-2xl p-6 sm:p-8 shadow-sm">
@@ -54,6 +113,23 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
 
         {summary && !isLoading && (
           <div className="flex items-center gap-2">
+            <label className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded-xl shadow-sm text-sm font-semibold text-slate-700">
+              <Languages className="w-4 h-4 text-slate-600" />
+              <span className="sr-only">Summary language</span>
+              <select
+                value={language}
+                onChange={(e) => handleLanguage(e.target.value)}
+                disabled={translating}
+                className="bg-transparent focus:outline-none cursor-pointer"
+                aria-label="Summary language"
+              >
+                {LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               onClick={handleCopy}
               className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl font-semibold text-sm shadow-sm transition-colors"
@@ -113,18 +189,37 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
             </button>
           </div>
         ) : summary ? (
-          <div className="space-y-5">
+          <div className="space-y-5" lang={current.code} dir={translated && current.rtl ? 'rtl' : 'ltr'}>
+            {translating && (
+              <div className="flex items-center gap-2 text-blue-700 font-semibold animate-pulse" dir="ltr">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                <span>Translating into {current.name}...</span>
+              </div>
+            )}
+            {translateError && (
+              <p className="text-base text-rose-700" dir="ltr">{translateError}</p>
+            )}
             <p className="text-xl text-slate-800 leading-relaxed font-normal">
-              {bodyText}
+              {shownBody}
             </p>
 
             {/* Mandatory ending sentence */}
             <div className="p-4 bg-amber-50/90 border border-amber-300 rounded-xl flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-              <p className="text-base font-bold text-amber-950">
-                {MANDATORY_ENDING}
-              </p>
+              <div>
+                <p className="text-base font-bold text-amber-950">{shownEnding}</p>
+                {translated && (
+                  <p className="text-sm text-amber-900 mt-1" lang="en" dir="ltr">
+                    {MANDATORY_ENDING}
+                  </p>
+                )}
+              </div>
             </div>
+            {translated && (
+              <p className="text-sm text-slate-500 italic" dir="ltr">
+                Machine translation by Gemini. Have a fluent speaker check it before you share it.
+              </p>
+            )}
           </div>
         ) : (
           <p className="text-lg text-slate-500 italic">
