@@ -39,4 +39,4 @@ The summary always ends with: "This is a starting point, not a zoning determinat
 
 Built for DevFest Providence 2026, Build for Good: AI Lab for Housing.
 
-Licensed under the Apache License 2.0.
+Licensed under the [MIT License](LICENSE).
