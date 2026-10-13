@@ -327,6 +327,32 @@ app.post('/api/places-nearby', async (req, res) => {
   }
 });
 
+// Free-tier keys are the first to be turned away when Gemini is busy
+// (503 "high demand"). Retry once, then fall back to an older Flash model.
+const MODELS = ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.5-flash'];
+
+async function generateWithFallback(
+  ai: GoogleGenAI,
+  params: Omit<Parameters<GoogleGenAI['models']['generateContent']>[0], 'model'>
+) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await ai.models.generateContent({ ...params, model: MODELS[attempt] });
+    } catch (err: any) {
+      const busy = /\b(503|429)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand/i.test(
+        String(err?.status ?? '') + ' ' + String(err?.message ?? '')
+      );
+      if (!busy) throw err;
+      if (attempt === MODELS.length - 1) {
+        throw new Error(
+          'Gemini is busy right now. Wait a minute and click Try Again. If it keeps happening, use a Gemini API key from a project with billing enabled.'
+        );
+      }
+      await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+    }
+  }
+}
+
 // 5. Gemini Plain-English Summary Endpoint
 app.post('/api/summarize', async (req, res) => {
   try {
@@ -383,36 +409,13 @@ ${amenityListText}
 Write the plain-English summary in exactly 5 to 8 sentences for a housing developer, ending with:
 "This is a starting point, not a zoning determination. Check with the town."`;
 
-    // Free-tier keys are the first to be turned away when Gemini is busy
-    // (503 "high demand"). Retry once, then fall back to an older Flash model.
-    const MODELS = ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.5-flash'];
-    let response;
-    for (let attempt = 0; attempt < MODELS.length; attempt++) {
-      try {
-        response = await ai.models.generateContent({
-          model: MODELS[attempt],
-          contents: userPrompt,
-          config: {
-            systemInstruction,
-            temperature: 0.7,
-          },
-        });
-        break;
-      } catch (err: any) {
-        const busy = /\b(503|429)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|high demand/i.test(
-          String(err?.status ?? '') + ' ' + String(err?.message ?? '')
-        );
-        if (!busy || attempt === MODELS.length - 1) {
-          if (busy) {
-            throw new Error(
-              'Gemini is busy right now. Wait a minute and click Try Again. If it keeps happening, use a Gemini API key from a project with billing enabled.'
-            );
-          }
-          throw err;
-        }
-        await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
-      }
-    }
+    const response = await generateWithFallback(ai, {
+      contents: userPrompt,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      },
+    });
 
     let rawText = response?.text ? response.text.trim() : '';
 
@@ -431,6 +434,58 @@ Write the plain-English summary in exactly 5 to 8 sentences for a housing develo
   } catch (err: any) {
     console.error('Gemini summary error:', err);
     res.status(500).json({ error: err.message || 'Error generating site summary with Gemini.' });
+  }
+});
+
+// 6. Translate the summary on demand (the summary card's language picker)
+app.post('/api/translate', async (req, res) => {
+  try {
+    const { text, disclaimer, language } = req.body;
+    if (!text || !language) {
+      return res.status(400).json({ error: 'Missing text or target language.' });
+    }
+
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    if (!geminiApiKey) {
+      return res.status(500).json({
+        error: 'GEMINI_API_KEY is not configured in environment or Secrets.',
+      });
+    }
+
+    const ai = new GoogleGenAI({
+      apiKey: geminiApiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
+    });
+
+    const response = await generateWithFallback(ai, {
+      contents: JSON.stringify({ text, disclaimer: disclaimer || '' }),
+      config: {
+        systemInstruction: `Translate the "text" and "disclaimer" fields into ${language} for a housing practitioner in Rhode Island. Use plain, everyday wording. Keep street addresses, place names, business names, URLs and ordinance chapter numbers exactly as written. Do not add, drop or summarize anything.`,
+        temperature: 0.2,
+        responseMimeType: 'application/json',
+        responseJsonSchema: {
+          type: 'object',
+          properties: {
+            text: { type: 'string' },
+            disclaimer: { type: 'string' },
+          },
+          required: ['text', 'disclaimer'],
+        },
+      },
+    });
+
+    const translated = JSON.parse(response?.text || '{}');
+    if (!translated.text) {
+      throw new Error('Gemini returned an empty translation. Try again.');
+    }
+    res.json({ text: translated.text, disclaimer: translated.disclaimer || '' });
+  } catch (err: any) {
+    console.error('Gemini translate error:', err);
+    res.status(500).json({ error: err.message || 'Error translating the summary.' });
   }
 });
 
