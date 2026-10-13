@@ -4,6 +4,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { matchRhodeIslandTown, TownInfo } from './townMatch';
 
 dotenv.config();
 
@@ -17,12 +18,6 @@ const isProduction = process.env.NODE_ENV === 'production';
 app.use(express.json());
 
 // Load towns data
-interface TownInfo {
-  town: string;
-  zoningUrl: string;
-  platform: string;
-  whereZoningSits: string;
-}
 
 const townsFilePath = path.join(__dirname, 'src', 'data', 'towns.json');
 let townsData: TownInfo[] = [];
@@ -31,165 +26,6 @@ try {
   townsData = JSON.parse(rawTowns);
 } catch (err) {
   console.error('Failed to load towns.json:', err);
-}
-
-// Helper to normalize strings for comparison
-function normalizeStr(str: string): string {
-  return str.toLowerCase().replace(/[^a-z0-9]/g, '');
-}
-
-// Known village/neighborhood to Rhode Island town mappings
-const VILLAGE_TO_TOWN: Record<string, string> = {
-  kingston: 'South Kingstown',
-  wakefield: 'South Kingstown',
-  peacedale: 'South Kingstown',
-  westkingston: 'South Kingstown',
-  snugharbor: 'South Kingstown',
-  greenhill: 'South Kingstown',
-  matunuck: 'South Kingstown',
-  perryville: 'South Kingstown',
-  wickford: 'North Kingstown',
-  quonset: 'North Kingstown',
-  davisville: 'North Kingstown',
-  saunderstown: 'North Kingstown',
-  blockisland: 'New Shoreham',
-  chepachet: 'Glocester',
-  harmony: 'Glocester',
-  pascoag: 'Burrillville',
-  harrisville: 'Burrillville',
-  mapleville: 'Burrillville',
-  nasonville: 'Burrillville',
-  bridgeton: 'Burrillville',
-  glendale: 'Burrillville',
-  oakland: 'Burrillville',
-  apponaug: 'Warwick',
-  conimicut: 'Warwick',
-  warwickneck: 'Warwick',
-  norwood: 'Warwick',
-  oaklandbeach: 'Warwick',
-  potowomut: 'Warwick',
-  gaspeepoint: 'Warwick',
-  hoxsie: 'Warwick',
-  buttonwoods: 'Warwick',
-  riverside: 'East Providence',
-  rumford: 'East Providence',
-  manville: 'Lincoln',
-  albion: 'Lincoln',
-  limerock: 'Lincoln',
-  saylesville: 'Lincoln',
-  ashaway: 'Hopkinton',
-  hopevalley: 'Hopkinton',
-  rockville: 'Hopkinton',
-  wyoming: 'Richmond',
-  woodriverjunction: 'Richmond',
-  carolina: 'Richmond',
-  alton: 'Richmond',
-  kenyon: 'Richmond',
-  greenville: 'Smithfield',
-  georgiaville: 'Smithfield',
-  esmond: 'Smithfield',
-  valleyfalls: 'Cumberland',
-  lonsdale: 'Cumberland',
-  cumberlandhill: 'Cumberland',
-  ashton: 'Cumberland',
-  berkeley: 'Cumberland',
-  diamondhill: 'Cumberland',
-  arnoldmills: 'Cumberland',
-  northscituate: 'Scituate',
-  hope: 'Scituate',
-  clayville: 'Scituate',
-  fiskeville: 'Scituate',
-  edgewood: 'Cranston',
-  knightsville: 'Cranston',
-  oaklawn: 'Cranston',
-  auburn: 'Cranston',
-  pawtuxet: 'Cranston',
-  meshanticut: 'Cranston',
-  misquamicut: 'Westerly',
-  watchhill: 'Westerly',
-  bradford: 'Westerly',
-  avondale: 'Westerly',
-  weekapaug: 'Westerly',
-  adamsville: 'Little Compton',
-  tivertonfourcorners: 'Tiverton',
-  quidnick: 'West Warwick',
-  arctic: 'West Warwick',
-  crompton: 'West Warwick',
-  centreville: 'West Warwick',
-  natick: 'West Warwick',
-  phenix: 'West Warwick',
-  riverpoint: 'West Warwick',
-  greene: 'Coventry',
-  summit: 'Coventry',
-  anthony: 'Coventry',
-  washington: 'Coventry',
-  tiogue: 'Coventry',
-  fostercenter: 'Foster',
-};
-
-// Match address components or formatted text to one of the 39 RI municipalities
-function matchRhodeIslandTown(components: any[] = [], formattedAddress: string = ''): TownInfo | null {
-  const normTownMap = new Map<string, TownInfo>();
-  for (const t of townsData) {
-    normTownMap.set(normalizeStr(t.town), t);
-  }
-
-  // Check locality (city/town)
-  const localityComp = components.find(c => c.types.includes('locality'));
-  if (localityComp) {
-    const norm = normalizeStr(localityComp.long_name);
-    if (normTownMap.has(norm)) {
-      return normTownMap.get(norm)!;
-    }
-    if (VILLAGE_TO_TOWN[norm]) {
-      const parent = VILLAGE_TO_TOWN[norm];
-      return townsData.find(t => t.town.toLowerCase() === parent.toLowerCase()) || null;
-    }
-  }
-
-  // Check administrative_area_level_3 (Towns in New England)
-  const admin3Comp = components.find(c => c.types.includes('administrative_area_level_3'));
-  if (admin3Comp) {
-    const raw = admin3Comp.long_name.replace(/^(Town of|City of)\s+/i, '');
-    const norm = normalizeStr(raw);
-    if (normTownMap.has(norm)) {
-      return normTownMap.get(norm)!;
-    }
-  }
-
-  // Check sublocality / neighborhood
-  const sublocalityComp = components.find(c =>
-    c.types.includes('sublocality') ||
-    c.types.includes('sublocality_level_1') ||
-    c.types.includes('neighborhood')
-  );
-  if (sublocalityComp) {
-    const norm = normalizeStr(sublocalityComp.long_name);
-    if (normTownMap.has(norm)) {
-      return normTownMap.get(norm)!;
-    }
-    if (VILLAGE_TO_TOWN[norm]) {
-      const parent = VILLAGE_TO_TOWN[norm];
-      return townsData.find(t => t.town.toLowerCase() === parent.toLowerCase()) || null;
-    }
-  }
-
-  // Check formatted address string for exact town names
-  for (const t of townsData) {
-    const regex = new RegExp(`\\b${t.town}\\b`, 'i');
-    if (regex.test(formattedAddress)) {
-      return t;
-    }
-  }
-
-  // Check village names in formatted address
-  for (const [village, parentTown] of Object.entries(VILLAGE_TO_TOWN)) {
-    if (normalizeStr(formattedAddress).includes(village)) {
-      return townsData.find(t => t.town.toLowerCase() === parentTown.toLowerCase()) || null;
-    }
-  }
-
-  return null;
 }
 
 // Distance calculation in meters
@@ -276,7 +112,7 @@ app.post('/api/geocode', async (req, res) => {
     const components = result.address_components || [];
 
     // Identify town
-    const matchedTown = matchRhodeIslandTown(components, formattedAddress);
+    const matchedTown = matchRhodeIslandTown(townsData, components, formattedAddress);
 
     res.json({
       location: { lat: location.lat, lng: location.lng },

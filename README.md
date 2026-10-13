@@ -12,6 +12,8 @@ Prompts to try after you Remix: [PROMPT-CARDS.md](PROMPT-CARDS.md)
 
 The app needs a Google Maps API key and does not contain one. In AI Studio, add it under Settings, then Secrets, with the name `GOOGLE_MAPS_API_KEY`. If no secret is set, the app asks you to paste a key and keeps it in your browser only. Never paste a key into the chat or commit one to a repo.
 
+**Restrict your key.** The app hands the key to the browser to draw the map, so anyone who opens a shared copy of your app can read it. In the Google Cloud console, open APIs & Services, then Credentials, then your key: under Application restrictions choose Websites and add your app's address, and under API restrictions allow only the Maps JavaScript, Geocoding and Places APIs.
+
 ## Run locally
 
 ```
@@ -21,10 +23,20 @@ npm run dev
 
 Set `GEMINI_API_KEY` and `GOOGLE_MAPS_API_KEY` in a local `.env.local` file (not committed).
 
+`npm test` checks the town lookup (which of the 39 municipalities an address is in).
+
+## Challenge starters
+
+Want a head start on one of the three challenges? Each starter is this app with the challenge's tab already built, ready to improve:
+
+- [housing-starter-zoning](https://github.com/GDG-PVD/housing-starter-zoning): What can be built at this site?
+- [housing-starter-approvals](https://github.com/GDG-PVD/housing-starter-approvals): What does it take to get approved?
+- [housing-starter-funding](https://github.com/GDG-PVD/housing-starter-funding): How does this project get funded?
+
 ## Disclaimer
 
 The summary always ends with: "This is a starting point, not a zoning determination. Check with the town." Confirm anything that matters with the town.
 
 Built for DevFest Providence 2026, Build for Good: AI Lab for Housing.
 
-Licensed under the Apache License 2.0.
+Licensed under the [MIT License](LICENSE).
