@@ -211,7 +211,8 @@ app.post('/api/places-nearby', async (req, res) => {
       });
 
       if (!resp.ok) {
-        throw new Error(`Places New API failed with status ${resp.status}`);
+        const errBody = await resp.json().catch(() => ({}));
+        throw new Error(errBody?.error?.message || `Places API (New) failed with status ${resp.status}`);
       }
 
       const data = await resp.json();
@@ -249,6 +250,10 @@ app.post('/api/places-nearby', async (req, res) => {
 
       const resp = await fetch(url);
       const data = await resp.json();
+      // The legacy API answers 200 even when the key is refused, so check the status
+      if (data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        throw new Error(data.error_message || `Places API (legacy) returned ${data.status}`);
+      }
       const items: AmenityItem[] = [];
       if (data.results && Array.isArray(data.results)) {
         for (const r of data.results.slice(0, 10)) {
@@ -275,19 +280,29 @@ app.post('/api/places-nearby', async (req, res) => {
       return items;
     }
 
+    const failures: string[] = [];
     for (const cat of categoriesConfig) {
       try {
         const catItems = await searchPlacesNew(cat);
         amenities.push(...catItems);
-      } catch (errNew) {
+      } catch (errNew: any) {
         // Fallback to legacy nearby search
         try {
           const fallbackItems = await searchPlacesLegacy(cat);
           amenities.push(...fallbackItems);
-        } catch (errLegacy) {
-          console.warn(`Failed search for ${cat.category}:`, errLegacy);
+        } catch (errLegacy: any) {
+          console.warn(`Failed search for ${cat.category}:`, errNew?.message, '|', errLegacy?.message);
+          failures.push(errNew?.message || String(errNew));
         }
       }
+    }
+
+    // If every search failed, the key or API setup is wrong. Say so instead of
+    // returning an empty list, which reads as "nothing nearby".
+    if (failures.length === categoriesConfig.length) {
+      return res.status(502).json({
+        error: `Couldn't search nearby places: ${failures[0]} Check that Places API (New) is enabled for your Maps key and that the key has no website restriction.`,
+      });
     }
 
     // Sort by walking distance
