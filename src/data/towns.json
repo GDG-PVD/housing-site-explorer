@@ -3,7 +3,7 @@
     "town": "Barrington",
     "zoningUrl": "https://ecode360.com/7120841",
     "platform": "eCode360",
-    "whereZoningSits": ""
+    "whereZoningSits": "Chapter 185, Zoning"
   },
   {
     "town": "Bristol",
@@ -27,7 +27,7 @@
     "town": "Charlestown",
     "zoningUrl": "https://ecode360.com/8492633",
     "platform": "eCode360",
-    "whereZoningSits": ""
+    "whereZoningSits": "Chapter 218, Zoning"
   },
   {
     "town": "Coventry",
@@ -63,7 +63,7 @@
     "town": "Exeter",
     "zoningUrl": "https://library.municode.com/ri/exeter",
     "platform": "Municode",
-    "whereZoningSits": ""
+    "whereZoningSits": "Appendix A, Zoning"
   },
   {
     "town": "Foster",
@@ -129,7 +129,7 @@
     "town": "Newport",
     "zoningUrl": "https://library.municode.com/ri/newport",
     "platform": "Municode",
-    "whereZoningSits": ""
+    "whereZoningSits": "Title 17, Zoning"
   },
   {
     "town": "North Kingstown",
@@ -147,7 +147,7 @@
     "town": "North Smithfield",
     "zoningUrl": "https://ecode360.com/NO4256",
     "platform": "eCode360",
-    "whereZoningSits": ""
+    "whereZoningSits": "Chapter 340, Zoning"
   },
   {
     "town": "Pawtucket",
@@ -205,9 +205,9 @@
   },
   {
     "town": "Warwick",
-    "zoningUrl": "https://www.warwickri.gov/city-council-legislative-department/pages/zoning-ordinances",
-    "platform": "Town website",
-    "whereZoningSits": ""
+    "zoningUrl": "https://library.municode.com/ri/warwick/codes/code_of_ordinances",
+    "platform": "Municode",
+    "whereZoningSits": "Appendix A, Zoning"
   },
   {
     "town": "West Greenwich",
@@ -219,7 +219,7 @@
     "town": "West Warwick",
     "zoningUrl": "https://library.municode.com/ri/west_warwick",
     "platform": "Municode",
-    "whereZoningSits": ""
+    "whereZoningSits": "Appendix A, Zoning Ordinance"
   },
   {
     "town": "Westerly",
