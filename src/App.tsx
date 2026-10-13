@@ -253,7 +253,7 @@ export default function App() {
     '111 Westminster St, Providence, RI',
     '1445 Main St, West Warwick, RI',
     '3139 Post Rd, Warwick, RI',
-    '100 Broad St, Central Falls, RI',
+    '580 Broad St, Central Falls, RI',
     '105 Franklin St, Westerly, RI',
   ];
 
