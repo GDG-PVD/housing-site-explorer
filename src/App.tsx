@@ -183,6 +183,9 @@ export default function App() {
       });
 
       const placesData = await placesRes.json();
+      if (!placesRes.ok) {
+        throw new Error(placesData.error || 'Nearby places search failed.');
+      }
       const loadedAmenities: AmenityItem[] = placesData.amenities || [];
       setAmenities(loadedAmenities);
 
