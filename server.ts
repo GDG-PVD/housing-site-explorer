@@ -588,6 +588,8 @@ Write the plain-English summary in exactly 5 to 8 sentences for a housing develo
   return { system, user, temperature: 0.7 };
 }
 
+const MAX_SUMMARY_REQUEST_CHARS = 20000;
+
 // 5. Plain-English Summary Endpoint (Gemini by default, or a picked model)
 app.post('/api/summarize', async (req, res) => {
   try {
@@ -595,6 +597,11 @@ app.post('/api/summarize', async (req, res) => {
 
     if (!address || !town) {
       return res.status(400).json({ error: 'Missing site address or town name.' });
+    }
+    // Keep the endpoint to site summaries: anyone who can reach a shared copy
+    // can call it, and every call spends the team's capped key.
+    if (JSON.stringify(req.body).length > MAX_SUMMARY_REQUEST_CHARS) {
+      return res.status(413).json({ error: 'Site details are too long to summarize.' });
     }
 
     const model = resolveModel(requestedModel);
