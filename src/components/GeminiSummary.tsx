@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, Copy, Check, RefreshCw, AlertCircle, ShieldAlert, Languages } from 'lucide-react';
+import { Sparkles, Copy, Check, RefreshCw, AlertCircle, ShieldAlert, Languages, Cpu } from 'lucide-react';
 
 // Rhode Island's most common home languages after English. Add more here.
 const LANGUAGES = [
@@ -18,6 +18,14 @@ const LANGUAGES = [
 interface Translation {
   text: string;
   disclaimer: string;
+  model?: string;
+}
+
+// One entry from /api/models (the list lives in server.ts, AI_MODELS)
+export interface AiModelOption {
+  id: string;
+  label: string;
+  provider: 'gemini' | 'openrouter';
 }
 
 interface GeminiSummaryProps {
@@ -25,6 +33,12 @@ interface GeminiSummaryProps {
   isLoading: boolean;
   error?: string | null;
   onRegenerate: () => void;
+  models: AiModelOption[];
+  openRouterConfigured: boolean;
+  selectedModel: string;
+  onModelChange: (id: string) => void;
+  // The model that wrote the summary on screen
+  summaryModel: string;
 }
 
 export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
@@ -32,6 +46,11 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
   isLoading,
   error,
   onRegenerate,
+  models,
+  openRouterConfigured,
+  selectedModel,
+  onModelChange,
+  summaryModel,
 }) => {
   const [copied, setCopied] = useState(false);
   const [language, setLanguage] = useState('en');
@@ -57,6 +76,8 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
     bodyText = summary.replace(MANDATORY_ENDING, '').trim();
   }
 
+  const modelLabel = (id: string) => models.find((m) => m.id === id)?.label || id || 'Gemini';
+
   const current = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
   const translated = language === 'en' ? null : translations[language];
   const shownBody = translated ? translated.text : bodyText;
@@ -73,7 +94,12 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
       const res = await fetch('/api/translate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: bodyText, disclaimer: MANDATORY_ENDING, language: target.code }),
+        body: JSON.stringify({
+          text: bodyText,
+          disclaimer: MANDATORY_ENDING,
+          language: target.code,
+          model: selectedModel || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Translation failed.');
@@ -111,52 +137,86 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
           </div>
         </div>
 
-        {summary && !isLoading && (
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {models.length > 0 && (
             <label className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded-xl shadow-sm text-sm font-semibold text-slate-700">
-              <Languages className="w-4 h-4 text-slate-600" />
-              <span className="sr-only">Summary language</span>
+              <Cpu className="w-4 h-4 text-slate-600" />
+              <span className="sr-only">AI model</span>
               <select
-                value={language}
-                onChange={(e) => handleLanguage(e.target.value)}
-                disabled={translating}
-                className="bg-transparent focus:outline-none cursor-pointer"
-                aria-label="Summary language"
+                value={selectedModel}
+                onChange={(e) => onModelChange(e.target.value)}
+                disabled={isLoading || translating}
+                className="bg-transparent focus:outline-none cursor-pointer max-w-[14rem]"
+                aria-label="AI model"
+                title="Pick a model, then click Regenerate to compare"
               >
-                {LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code}>
-                    {l.label}
+                {models.map((m) => (
+                  <option
+                    key={m.id}
+                    value={m.id}
+                    disabled={m.provider === 'openrouter' && !openRouterConfigured}
+                  >
+                    {m.label}
+                    {m.provider === 'openrouter' && !openRouterConfigured ? ' (needs OpenRouter key)' : ''}
                   </option>
                 ))}
               </select>
             </label>
-            <button
-              onClick={handleCopy}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl font-semibold text-sm shadow-sm transition-colors"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-600" />
-                  <span className="text-emerald-700">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4 text-slate-600" />
-                  <span>Copy Summary</span>
-                </>
-              )}
-            </button>
-            <button
-              onClick={onRegenerate}
-              title="Regenerate summary"
-              className="p-2.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-300 rounded-xl transition-colors shadow-sm"
-              aria-label="Regenerate summary"
-            >
-              <RefreshCw className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+          )}
+          {summary && !isLoading && (
+            <>
+              <label className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-300 rounded-xl shadow-sm text-sm font-semibold text-slate-700">
+                <Languages className="w-4 h-4 text-slate-600" />
+                <span className="sr-only">Summary language</span>
+                <select
+                  value={language}
+                  onChange={(e) => handleLanguage(e.target.value)}
+                  disabled={translating}
+                  className="bg-transparent focus:outline-none cursor-pointer"
+                  aria-label="Summary language"
+                >
+                  {LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                onClick={handleCopy}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl font-semibold text-sm shadow-sm transition-colors"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span className="text-emerald-700">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 text-slate-600" />
+                    <span>Copy Summary</span>
+                  </>
+                )}
+              </button>
+              <button
+                onClick={onRegenerate}
+                title="Regenerate summary"
+                className="p-2.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-300 rounded-xl transition-colors shadow-sm"
+                aria-label="Regenerate summary"
+              >
+                <RefreshCw className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
       </div>
+
+      {models.length > 0 && !openRouterConfigured && (
+        <p className="mt-3 text-sm text-slate-500">
+          To try other models, add your team's OpenRouter key under Settings, then Secrets, as{' '}
+          <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-slate-800 font-semibold">OPENROUTER_API_KEY</code>.
+        </p>
+      )}
 
       {/* Content */}
       <div className="mt-6">
@@ -164,7 +224,7 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
           <div className="space-y-4 py-3">
             <div className="flex items-center gap-3 text-blue-700 font-semibold text-lg animate-pulse">
               <RefreshCw className="w-5 h-5 animate-spin" />
-              <span>Analyzing site amenities and municipal zoning ordinance with Gemini...</span>
+              <span>Analyzing site amenities and municipal zoning ordinance with {modelLabel(selectedModel)}...</span>
             </div>
             <div className="space-y-2.5 animate-pulse">
               <div className="h-5 bg-blue-100/70 rounded-md w-full"></div>
@@ -217,7 +277,13 @@ export const GeminiSummary: React.FC<GeminiSummaryProps> = ({
             </div>
             {translated && (
               <p className="text-sm text-slate-500 italic" dir="ltr">
-                Machine translation by Gemini. Have a fluent speaker check it before you share it.
+                Machine translation by {modelLabel(translated.model || '')}. Have a fluent speaker check it before you share it.
+              </p>
+            )}
+            {summaryModel && (
+              <p className="text-sm text-slate-500" dir="ltr">
+                Summary written by <span className="font-semibold text-slate-700">{modelLabel(summaryModel)}</span>
+                {selectedModel && selectedModel !== summaryModel && ' (click Regenerate to try the model you picked)'}
               </p>
             )}
           </div>

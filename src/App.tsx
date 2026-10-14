@@ -23,7 +23,9 @@ import { KeyModal } from './components/KeyModal';
 import { SiteMap } from './components/SiteMap';
 import { ZoningCard } from './components/ZoningCard';
 import { AmenitiesList } from './components/AmenitiesList';
-import { GeminiSummary } from './components/GeminiSummary';
+import { GeminiSummary, AiModelOption } from './components/GeminiSummary';
+
+const MODEL_STORAGE_KEY = 'site_explorer_model';
 
 export default function App() {
   // API Key State
@@ -53,6 +55,12 @@ export default function App() {
   const [geminiSummary, setGeminiSummary] = useState<string>('');
   const [isGeminiLoading, setIsGeminiLoading] = useState<boolean>(false);
   const [geminiError, setGeminiError] = useState<string | null>(null);
+
+  // Model picker (list comes from /api/models; '' means "server default")
+  const [aiModels, setAiModels] = useState<AiModelOption[]>([]);
+  const [openRouterConfigured, setOpenRouterConfigured] = useState<boolean>(false);
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [summaryModel, setSummaryModel] = useState<string>('');
 
   // Maps Quota / Auth state
   const [quotaExceeded, setQuotaExceeded] = useState<boolean>(false);
@@ -95,6 +103,30 @@ export default function App() {
 
     initConfig();
 
+    // Load the model list and restore the last pick if it is still usable
+    async function loadModels() {
+      try {
+        const res = await fetch('/api/models');
+        const data = await res.json();
+        const list: AiModelOption[] = Array.isArray(data.models) ? data.models : [];
+        const usable = (id: string | null) =>
+          list.some((m) => m.id === id && (m.provider === 'gemini' || data.openRouterConfigured));
+        let saved: string | null = null;
+        try {
+          saved = localStorage.getItem(MODEL_STORAGE_KEY);
+        } catch {
+          // Storage can be blocked; fall back to the default model
+        }
+        setAiModels(list);
+        setOpenRouterConfigured(Boolean(data.openRouterConfigured));
+        setSelectedModel(usable(saved) ? (saved as string) : data.defaultModel || '');
+      } catch (err) {
+        console.error('Model list fetch failed:', err);
+      }
+    }
+
+    loadModels();
+
     // Listen to quota or auth failures
     const handleQuotaExceeded = () => setQuotaExceeded(true);
     const handleAuthFailure = () => setAuthFailed(true);
@@ -107,6 +139,15 @@ export default function App() {
       window.removeEventListener('gmp-auth-failure', handleAuthFailure);
     };
   }, []);
+
+  const handleModelChange = (id: string) => {
+    setSelectedModel(id);
+    try {
+      localStorage.setItem(MODEL_STORAGE_KEY, id);
+    } catch {
+      // Storage can be blocked; the pick still lasts for this visit
+    }
+  };
 
   // Save key handler
   const handleSaveKey = (newKey: string) => {
@@ -222,18 +263,19 @@ export default function App() {
       const res = await fetch('/api/summarize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(siteContext),
+        body: JSON.stringify({ ...siteContext, model: selectedModel || undefined }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate developer summary with Gemini.');
+        throw new Error(data.error || 'Failed to generate developer summary.');
       }
 
       setGeminiSummary(data.summary || '');
+      setSummaryModel(data.model || '');
     } catch (err: any) {
       console.error('Gemini error:', err);
-      setGeminiError(err.message || 'Failed to generate Gemini summary.');
+      setGeminiError(err.message || 'Failed to generate the summary.');
     } finally {
       setIsGeminiLoading(false);
     }
@@ -547,6 +589,11 @@ export default function App() {
                   isLoading={isGeminiLoading}
                   error={geminiError}
                   onRegenerate={handleRegenerate}
+                  models={aiModels}
+                  openRouterConfigured={openRouterConfigured}
+                  selectedModel={selectedModel}
+                  onModelChange={handleModelChange}
+                  summaryModel={summaryModel}
                 />
               </div>
             )}
