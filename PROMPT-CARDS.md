@@ -22,3 +22,7 @@ The summary card already has a language picker: it sends the text to Gemini thro
 1. "When I pick a language in the summary card, translate the zoning card and the nearby places list too. Keep street names, place names and links as they are."
 2. "Translate my challenge tab into the selected language, including the printout."
 3. "Add a one-page flyer for neighbors about this site, in the selected language, in plain words a non-expert can follow."
+
+## Any challenge: compare models
+The summary card has a model menu. Models other than Gemini need your team's OpenRouter key under Settings, then Secrets, as `OPENROUTER_API_KEY`.
+1. "Compare models: summarize the same address with two models side by side and show both. Let me pick the two models from the model list, and label each summary with the model that wrote it."

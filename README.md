@@ -14,6 +14,17 @@ The app needs a Google Maps API key and does not contain one. In AI Studio, add 
 
 **Restrict your key.** The app hands the key to the browser to draw the map, so anyone who opens a shared copy of your app can read it. The server also uses the same key to look up addresses and nearby places, so leave Application restrictions at None: Google refuses website-restricted keys on server calls, and address search would fail while the map still draws. In the Google Cloud console, open APIs & Services, then Credentials, then your key: under API restrictions allow only the Maps JavaScript, Geocoding, Places API (New) and Places APIs. Then set a low daily quota on each of those APIs, and delete the key after the event.
 
+## Try other models with OpenRouter
+
+The summary and its translations use Gemini by default. To compare other models (Claude, GPT, Qwen, DeepSeek, Mistral and more):
+
+1. In AI Studio, open Settings, then Secrets, and add your team's OpenRouter key with the name `OPENROUTER_API_KEY`. Organizers hand each team its own key.
+2. In the summary card, pick a model from the model menu, then click Regenerate. The card says which model wrote the summary on screen.
+
+Your key has a spending cap. If the card says your credit is used up, ask an organizer. The two models marked "larger, costs more" use the cap up fastest. Never paste the key into the chat or the code, and don't send private or client data to any model: use public addresses only.
+
+If your app has only `OPENROUTER_API_KEY` and no `GEMINI_API_KEY`, it uses Gemini 3.8 Flash through OpenRouter by default. Teams can edit the model list (`AI_MODELS` in `server.ts`); only models on that list are accepted.
+
 ## Run locally
 
 ```
@@ -21,7 +32,7 @@ npm install
 npm run dev
 ```
 
-Set `GEMINI_API_KEY` and `GOOGLE_MAPS_API_KEY` in a local `.env.local` file (not committed).
+Set `GEMINI_API_KEY` and `GOOGLE_MAPS_API_KEY` (and optionally `OPENROUTER_API_KEY`) in a local `.env.local` file (not committed).
 
 `npm test` checks the town lookup (which of the 39 municipalities an address is in).
 
